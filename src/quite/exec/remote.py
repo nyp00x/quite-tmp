@@ -72,17 +72,26 @@ class RemoteExecutorChannel:
             grpc.Compression.Gzip if cfg.compression else grpc.Compression.NoCompression
         )
         self.endpoint = endpoint
+
+        options = CHANNEL_OPTIONS
+
+        if endpoint.ssl_target_name_override:
+            options = list(options)
+            options += [
+                ("grpc.ssl_target_name_override", endpoint.ssl_target_name_override)
+            ]
+
         if not secure:
             self.channel = grpc.aio.insecure_channel(
                 target=f"{endpoint.host}:{endpoint.port}",
-                options=CHANNEL_OPTIONS,
+                options=options,
                 compression=compression,
             )
         else:
             self.channel = grpc.aio.secure_channel(
                 target=f"{endpoint.host}:{endpoint.port}",
                 credentials=grpc.ssl_channel_credentials(),
-                options=CHANNEL_OPTIONS,
+                options=options,
                 compression=compression,
             )
         self.stub = QRPCStub(self.channel)

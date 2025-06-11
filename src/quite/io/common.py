@@ -118,29 +118,38 @@ class GRPCEndpoint(Struct, **struct_options):
         | None
     ) = None
     secure: bool = False
+    ssl_target_name_override: str | None = None
 
     def __str__(self):
         return f"{self.host}:{self.port}"
 
     @classmethod
-    def from_str(cls, s: str, secure: bool = False):
+    def from_str(
+        cls, s: str, ssl_target_name_override: str | None = None, secure: bool = False
+    ):
         """
         Create from string
         """
         parts = s.split(":")
         if len(parts) != 2:
             raise ValueError(f"invalid gRPC endpoint: {s}")
-        return GRPCEndpoint(host=parts[0], port=int(parts[1]), secure=secure)
+        return GRPCEndpoint(
+            host=parts[0],
+            port=int(parts[1]),
+            ssl_target_name_override=ssl_target_name_override,
+            secure=secure,
+        )
 
     def __eq__(self, other):
         return (
             self.host == other.host
             and self.port == other.port
             and self.secure == other.secure
+            and self.ssl_target_name_override == other.ssl_target_name_override
         )
 
     def __hash__(self):
-        return hash((self.host, self.port, self.secure))
+        return hash((self.host, self.port, self.secure, self.ssl_target_name_override))
 
 
 class IDInfo(Struct, **struct_options):
